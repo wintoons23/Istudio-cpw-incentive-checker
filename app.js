@@ -1,106 +1,186 @@
-let database = []
+/* ===============================
+   Load Database
+================================ */
+
+let database = [];
 
 fetch("database.json")
-.then(res => res.json())
-.then(data => database = data)
+  .then(res => res.json())
+  .then(data => {
+    database = data;
+    console.log("Database loaded:", database.length);
+  });
 
-const input = document.getElementById("barcodeInput")
-const searchBtn = document.getElementById("searchBtn")
-const scanBtn = document.getElementById("scanBtn")
-const uploadBtn = document.getElementById("uploadBtn")
-const fileInput = document.getElementById("fileInput")
-const reader = document.getElementById("reader")
+/* ===============================
+   DOM Elements
+================================ */
 
-const productName = document.getElementById("productName")
-const staffCom = document.getElementById("staffCom")
-const leaderCom = document.getElementById("leaderCom")
-const tamagCom = document.getElementById("tamagCom")
+const input = document.getElementById("barcodeInput");
+const searchBtn = document.getElementById("searchBtn");
+const scanBtn = document.getElementById("scanBtn");
+const uploadBtn = document.getElementById("uploadBtn");
+const fileInput = document.getElementById("fileInput");
+const reader = document.getElementById("reader");
 
-function searchProduct(code){
+const productName = document.getElementById("productName");
+const staffCom = document.getElementById("staffCom");
+const leaderCom = document.getElementById("leaderCom");
+const tamagCom = document.getElementById("tamagCom");
 
-const product = database.find(p => p["Part Number"] === code)
+const incentiveExtra = document.getElementById("incentiveExtra");
+const incentiveDetail = document.getElementById("incentiveDetail");
+const incentiveDate = document.getElementById("incentiveDate");
 
-if(!product){
-productName.innerText = "ไม่พบสินค้า ❌"
-staffCom.innerText = "-"
-leaderCom.innerText = "-"
-tamagCom.innerText = "-"
-return
+/* ===============================
+   Search Function
+================================ */
+
+function searchProduct(code) {
+
+  const product = database.find(
+    p => String(p["Part Number"]).trim() === String(code).trim()
+  );
+
+  if (!product) {
+
+    productName.innerText = "ไม่พบสินค้า ❌";
+
+    staffCom.innerText = "-";
+    leaderCom.innerText = "-";
+    tamagCom.innerText = "-";
+
+    incentiveExtra.style.display = "none";
+
+    return;
+  }
+
+  productName.innerText = product["Model"] || "-";
+
+  staffCom.innerText = product["Sales Staff"] || "-";
+  leaderCom.innerText = product["Store Leader"] || "-";
+  tamagCom.innerText = product["Total incentive"] || "-";
+
+  if (product["Incentive Details"] || product["Start Date"]) {
+
+    incentiveExtra.style.display = "block";
+
+    incentiveDetail.innerText =
+      product["Incentive Details"] || "-";
+
+    incentiveDate.innerText =
+      (product["Start Date"] || "") +
+      " - " +
+      (product["End Date"] || "");
+
+  } else {
+
+    incentiveExtra.style.display = "none";
+
+  }
+
 }
 
-productName.innerText = product["Model"]
-staffCom.innerText = product["Sales Staff"]
-leaderCom.innerText = product["Store Leader"]
-tamagCom.innerText = product["Total incentive"]
-
-}
+/* ===============================
+   Manual Search
+================================ */
 
 searchBtn.addEventListener("click", () => {
-searchProduct(input.value.trim())
-})
 
-/* ===== CAMERA SCAN ===== */
+  const code = input.value.trim();
+
+  if (!code) return;
+
+  searchProduct(code);
+
+});
+
+/* ===============================
+   Scan Camera
+================================ */
 
 scanBtn.addEventListener("click", async () => {
 
-reader.classList.add("active")
+  reader.classList.add("active");
 
-const html5QrCode = new Html5Qrcode("reader")
+  const html5QrCode = new Html5Qrcode("reader");
 
-try{
+  try {
 
-await html5QrCode.start(
-{ facingMode: "environment" },
-{
-fps: 10,
-qrbox: { width: 300, height: 120 }
-},
-(decodedText) => {
+    const cameras = await Html5Qrcode.getCameras();
 
-input.value = decodedText
-searchProduct(decodedText)
+    if (!cameras.length) {
 
-html5QrCode.stop()
-reader.classList.remove("active")
+      alert("ไม่พบกล้อง");
+      return;
 
-}
-)
+    }
 
-}catch(err){
+    const cameraId = cameras[0].id;
 
-alert("ไม่สามารถเปิดกล้องได้")
+    await html5QrCode.start(
+      cameraId,
+      {
+        fps: 10,
+        qrbox: { width: 300, height: 120 }
+      },
+      (decodedText) => {
 
-}
+        input.value = decodedText;
 
-})
+        searchProduct(decodedText);
 
-/* ===== SELECT FROM GALLERY ===== */
+        html5QrCode.stop();
+
+        reader.classList.remove("active");
+
+      },
+      (error) => {
+        // ignore scan errors
+      }
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("ไม่สามารถเปิดกล้องได้ กรุณาอนุญาต Camera");
+
+  }
+
+});
+
+/* ===============================
+   Select from Gallery
+================================ */
 
 uploadBtn.addEventListener("click", () => {
 
-fileInput.click()
+  fileInput.click();
 
-})
+});
 
 fileInput.addEventListener("change", async (e) => {
 
-const file = e.target.files[0]
+  const file = e.target.files[0];
 
-if(!file) return
+  if (!file) return;
 
-const html5QrCode = new Html5Qrcode("reader")
+  const html5QrCode = new Html5Qrcode("reader");
 
-try{
+  try {
 
-const result = await html5QrCode.scanFile(file, true)
+    const result = await html5QrCode.scanFile(file, true);
 
-input.value = result
-searchProduct(result)
+    input.value = result;
 
-}catch(err){
+    searchProduct(result);
 
-alert("ไม่สามารถอ่าน barcode จากรูปได้")
+  } catch (err) {
 
-}
+    console.error(err);
 
-})
+    alert("ไม่สามารถอ่าน barcode จากรูปได้");
+
+  }
+
+});
