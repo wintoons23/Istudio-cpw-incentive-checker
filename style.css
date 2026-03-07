@@ -1,269 +1,239 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
 
-/* ===== Background ===== */
+body{
 
-body {
 font-family:
-    "Inter",
-    "Noto Sans Thai",
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+"Inter",
+"Noto Sans Thai",
+-apple-system,
+BlinkMacSystemFont,
+sans-serif;
 
-background-image: url("img/bg.jpg");
-background-size: cover;
-background-position: center;
-background-attachment: fixed;
+background-image:url("img/bg.jpg");
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
 
-min-height: 100vh;
+min-height:100vh;
 
-display: flex;
-justify-content: center;
+display:flex;
+justify-content:center;
 
-padding: 40px 16px;
+padding:40px 16px;
 
-color: #1d1d1f;
+color:#1d1d1f;
+
 }
 
-/* overlay เพื่อทำให้ glass เด่น */
+body::before{
 
-body::before {
-content: "";
+content:"";
 
-position: fixed;
-inset: 0;
+position:fixed;
+inset:0;
 
-backdrop-filter: blur(6px);
+backdrop-filter:blur(6px);
 
-background: rgba(255,255,255,0.15);
+background:rgba(255,255,255,0.15);
 
-z-index: -1;
+z-index:-1;
+
 }
 
-/* ===== Container ===== */
-
-.app {
-width: 100%;
-max-width: 420px;
+.app{
+width:100%;
+max-width:420px;
 }
 
-/* ===== Header ===== */
-
-.header {
-text-align: center;
-margin-bottom: 32px;
+.header{
+text-align:center;
+margin-bottom:32px;
 }
 
-.header h1 {
-font-size: 28px;
-font-weight: 700;
+.header h1{
+font-size:26px;
+font-weight:700;
 }
 
-/* ===== Glass Card ===== */
+.card{
 
-.card {
+background:rgba(255,255,255,0.55);
 
-background: rgba(255,255,255,0.55);
+backdrop-filter:blur(25px);
+-webkit-backdrop-filter:blur(25px);
 
-backdrop-filter: blur(25px);
--webkit-backdrop-filter: blur(25px);
+border-radius:26px;
 
-border-radius: 26px;
+padding:28px;
 
-padding: 28px;
+margin-bottom:24px;
 
-margin-bottom: 24px;
-
-border: 1px solid rgba(255,255,255,0.6);
+border:1px solid rgba(255,255,255,0.6);
 
 box-shadow:
 0 20px 40px rgba(0,0,0,0.15),
 inset 0 1px 0 rgba(255,255,255,0.7);
+
 }
 
-/* ===== Label ===== */
-
-label {
-font-size: 13px;
-color: #4b5563;
+label{
+font-size:13px;
+color:#4b5563;
 }
 
-/* ===== Input ===== */
+input{
 
-input {
-width: 100%;
+width:100%;
+margin-top:10px;
 
-margin-top: 10px;
+padding:16px;
 
-padding: 16px;
+border-radius:16px;
 
-border-radius: 16px;
+border:1px solid rgba(255,255,255,0.6);
 
-border: 1px solid rgba(255,255,255,0.6);
+background:rgba(255,255,255,0.6);
 
-background: rgba(255,255,255,0.6);
+backdrop-filter:blur(10px);
 
-backdrop-filter: blur(10px);
+font-size:16px;
 
-font-size: 16px;
 }
 
-input:focus {
-outline: none;
-border-color: #0071e3;
+input:focus{
+outline:none;
+border-color:#0071e3;
 }
 
-/* ===== Buttons ===== */
+.btn-group{
 
-.btn-group {
-display: grid;
-grid-template-columns: 1fr 1fr;
+display:grid;
+grid-template-columns:1fr 1fr;
 
-gap: 12px;
+gap:12px;
 
-margin-top: 18px;
+margin-top:18px;
+
 }
 
-button {
-padding: 16px;
+button{
 
-border-radius: 16px;
+padding:16px;
 
-border: none;
+border-radius:16px;
 
-font-size: 15px;
+border:none;
 
-font-weight: 600;
+font-size:15px;
 
-cursor: pointer;
+font-weight:600;
 
-transition: all 0.2s ease;
+cursor:pointer;
+
+transition:all 0.2s ease;
+
 }
 
-button:hover {
-transform: translateY(-2px);
+button:hover{
+transform:translateY(-2px);
 }
 
-/* ===== Primary Button ===== */
+.check-btn{
 
-.check-btn {
+margin-top:16px;
 
-margin-top: 16px;
+width:100%;
 
-width: 100%;
+background:rgba(97,129,161,0.9);
 
-background: rgba(97, 129, 161, 0.9);
+color:white;
 
-color: white;
-
-backdrop-filter: blur(10px);
 }
-
-/* ===== Secondary Buttons ===== */
 
 .scan-btn,
-.upload-btn {
+.upload-btn{
 
-background: rgba(255,255,255,0.6);
+background:rgba(255,255,255,0.6);
 
-border: 1px solid rgba(255,255,255,0.7);
+border:1px solid rgba(255,255,255,0.7);
 
 }
 
-/* ===== Camera ===== */
+/* ===== Scanner ===== */
 
-#reader {
-display: none;
+#reader{
 
-margin-top: 20px;
+display:none;
 
-border-radius: 20px;
+margin-top:20px;
 
-overflow: hidden;
+border-radius:20px;
 
-background: black;
+overflow:hidden;
+
+background:black;
+
 }
 
-#reader.active {
-display: block;
+#reader.active{
+display:block;
 }
 
-#reader video {
-width: 100%;
+#reader video{
 
-height: 300px;
+width:100%;
+height:auto;
 
-object-fit: cover;
-}
+object-fit:contain;
 
-/* ===== Product Image ===== */
-
-.product-image {
-display: none;
-
-margin-top: 20px;
-
-text-align: center;
-}
-
-.product-image img {
-
-width: 100%;
-
-max-width: 240px;
-
-border-radius: 16px;
-
-box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
 /* ===== Result ===== */
 
-.result h2 {
+.result h2{
 
-font-size: 20px;
+font-size:20px;
+margin-bottom:12px;
 
-margin-bottom: 12px;
 }
 
-.result-row {
+.result-row{
 
-display: flex;
+display:flex;
 
-justify-content: space-between;
+justify-content:space-between;
 
-padding: 14px 0;
+padding:14px 0;
 
-border-top: 1px solid rgba(0,0,0,0.05);
+border-top:1px solid rgba(0,0,0,0.05);
+
 }
 
-.result-row span {
-
-color: #4b5563;
+.result-row span{
+color:#4b5563;
 }
 
-.result-row strong {
+.result-row strong{
 
-font-size: 18px;
+font-size:18px;
+font-weight:600;
 
-font-weight: 600;
 }
 
-/* ===== Extra ===== */
+#incentiveExtra{
 
-#incentiveExtra {
+margin-top:16px;
 
-margin-top: 16px;
+font-size:13px;
 
-font-size: 13px;
+color:#4b5563;
 
-color: #4b5563;
 }
 
-.extra {
-margin-top: 8px;
+.extra{
+margin-top:8px;
 }
