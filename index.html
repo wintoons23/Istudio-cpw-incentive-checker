@@ -1,78 +1,97 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <title>iStudio by Copperwired
-  Incentive Checker</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<title>iStudio by Copperwired Incentive Checker</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
-  <div class="app">
 
-    <header class="header">
-      <h1>iStudio OneBangkok Incentive Checker MAR 2026 🍏</h1>
-    </header>
+<div class="app">
 
-    <section class="card">
-      <label>กรอก Part Number</label>
-      <input type="text" id="barcodeInput" placeholder="กรอก / scan / เลือกรูป" />
+<header class="header">
+<h1>iStudio OneBangkok Incentive Checker MAR 2026 🍏</h1>
+</header>
 
-      <!-- ปุ่มคู่ด้านบน -->
-      <div class="btn-group">
-        <button id="uploadBtn" class="upload-btn">Select from Gallery</button>
-        <button id="scanBtn" class="scan-btn">Scan Camera</button>
-      </div>
+<section class="card">
 
-      <!-- ปุ่ม Check แยกลงมา -->
-      <button id="searchBtn" class="check-btn">Check Incentive 🍎</button>
+<label>กรอก Part Number</label>
 
-      <input type="file" id="fileInput" hidden>
+<input
+type="text"
+id="barcodeInput"
+placeholder="กรอก / scan / เลือกรูป"
+/>
 
-      <div id="reader"></div>
+<div class="btn-group">
 
-      <!-- รูปสินค้า -->
-      <div class="product-image" id="productImageWrap">
-        <img id="productImage" />
-      </div>
-    </section>
+<button id="uploadBtn" class="upload-btn">
+Select from Gallery
+</button>
 
-    <section class="card result">
-      <h2 id="productName">รอการค้นหา 👀</h2>
+<button id="scanBtn" class="scan-btn">
+Scan Camera
+</button>
 
-      <div class="result-row">
-        <span>Incentive Sales</span>
-        <strong id="staffCom">-</strong>
-      </div>
+</div>
 
-      <div class="result-row">
-        <span>Incentive พี่ปูน</span>
-        <strong id="leaderCom">-</strong>
-      </div>
+<button id="searchBtn" class="check-btn">
+Check Incentive 🍎
+</button>
 
-      <div class="result-row">
-        <span>Incentive ตาแม็ก</span>
-        <strong id="tamagCom">-</strong>
-      </div>
+<input type="file" id="fileInput" hidden>
 
-      <div id="incentiveExtra" style="display:none;">
-        <div class="extra">
-          <strong>รายละเอียด:</strong>
-          <span id="incentiveDetail"></span>
-        </div>
-        <div class="extra">
-          <strong>ช่วงเวลา:</strong>
-          <span id="incentiveDate"></span>
-        </div>
-      </div>
-    </section>
+<div id="reader"></div>
 
-  </div>
+</section>
 
-  <script src="https://unpkg.com/@zxing/library@latest"></script>
-  <script src="app.js"></script>
+<section class="card result">
+
+<h2 id="productName">รอการค้นหา 👀</h2>
+
+<div class="result-row">
+<span>Incentive Sales</span>
+<strong id="staffCom">-</strong>
+</div>
+
+<div class="result-row">
+<span>Incentive พี่ปูน</span>
+<strong id="leaderCom">-</strong>
+</div>
+
+<div class="result-row">
+<span>Incentive ตาแม็ก</span>
+<strong id="tamagCom">-</strong>
+</div>
+
+<div id="incentiveExtra" style="display:none">
+
+<div class="extra">
+<strong>รายละเอียด:</strong>
+<span id="incentiveDetail"></span>
+</div>
+
+<div class="extra">
+<strong>ช่วงเวลา:</strong>
+<span id="incentiveDate"></span>
+</div>
+
+</div>
+
+</section>
+
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="app.js"></script>
+
 </body>
 </html>
