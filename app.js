@@ -1,15 +1,4 @@
-let database = [];
-
-// ===== โหลด database =====
-async function loadDatabase() {
-const res = await fetch("database.json");
-database = await res.json();
-}
-
-loadDatabase();
-
-// ===== DOM =====
-const input = document.getElementById("barcodeInput");
+const barcodeInput = document.getElementById("barcodeInput");
 const searchBtn = document.getElementById("searchBtn");
 const scanBtn = document.getElementById("scanBtn");
 
@@ -20,128 +9,129 @@ const tamagCom = document.getElementById("tamagCom");
 
 const reader = document.getElementById("reader");
 
-// ===== ทำความสะอาด barcode =====
-function normalizeBarcode(value) {
+let database = [];
+let scanning = false;
 
-return value
-.replace("(01)", "")      // ลบ prefix GS1
-.replace(/\s/g, "")       // ลบ space
-.replace(/\D/g, "")       // เอาเฉพาะตัวเลข
-.replace(/^0+/, "")       // ลบเลข 0 ข้างหน้า
+const codeReader = new ZXing.BrowserMultiFormatReader();
+
+/* โหลด database */
+async function loadDatabase() {
+
+const res = await fetch("database.json");
+const raw = await res.json();
+
+database = raw.filter(item => item["Part Number"]);
+
+console.log("Loaded products:", database.length);
+
+}
+
+loadDatabase();
+
+/* ทำความสะอาด barcode */
+function cleanBarcode(code) {
+
+return String(code)
+.replace("(01)", "")
+.replace(/\s/g, "")
 .trim();
 
 }
 
-// ===== หา product =====
-function findProduct(part) {
+/* ค้นหา */
+function searchBarcode(code) {
 
-const cleaned = normalizeBarcode(part);
-
-return database.find(item => {
-
-```
-if (!item["Part Number"]) return false;
-
-const dbPart = normalizeBarcode(String(item["Part Number"]));
-
-return dbPart === cleaned;
-```
-
-});
-
+if (database.length === 0) {
+alert("Database ยังโหลดไม่เสร็จ");
+return;
 }
 
-// ===== แสดงสินค้า =====
-function showProduct(data) {
+const clean = cleanBarcode(code);
 
-productName.innerText = data["Model"] || "-";
+const product = database.find(p =>
+String(p["Part Number"]).trim() === clean
+);
 
-staffCom.innerText = data["Sales Staff"] || "-";
-leaderCom.innerText = data["Store Leader"] || "-";
+if (!product) {
 
-const tamag =
-Number(data["Total incentive"]) -
-Number(data["Sales Staff"]) -
-Number(data["Store Leader"]);
-
-tamagCom.innerText = tamag || "-";
-
-}
-
-// ===== reset =====
-function clearResult() {
-
-productName.innerText = "ไม่พบสินค้า";
+```
+productName.innerText = "❌ ไม่พบสินค้า";
 staffCom.innerText = "-";
 leaderCom.innerText = "-";
 tamagCom.innerText = "-";
 
-}
-
-// ===== search =====
-function searchProduct() {
-
-const value = input.value;
-
-if (!value) {
-alert("กรอก Part Number ก่อน");
 return;
-}
-
-const product = findProduct(value);
-
-if (!product) {
-clearResult();
-return;
-}
-
-showProduct(product);
+```
 
 }
 
-// ===== click search =====
-searchBtn.addEventListener("click", searchProduct);
+productName.innerText = product["Model"] || "-";
 
-// ===== enter search =====
-input.addEventListener("keypress", function (e) {
+const staff = Number(product["Sales Staff"] || 0);
+const leader = Number(product["Store Leader"] || 0);
+
+staffCom.innerText = staff + " บาท";
+
+const split = Math.floor(leader / 2);
+
+leaderCom.innerText = split + " บาท";
+tamagCom.innerText = split + " บาท";
+
+}
+
+/* ปุ่ม search */
+searchBtn.onclick = () => {
+
+searchBarcode(barcodeInput.value);
+
+};
+
+/* กด enter */
+barcodeInput.addEventListener("keypress", e => {
 
 if (e.key === "Enter") {
-searchProduct();
+searchBarcode(barcodeInput.value);
 }
 
 });
 
-// ===== scanner =====
-let codeReader;
+/* scan กล้อง */
+scanBtn.onclick = async () => {
 
-scanBtn.addEventListener("click", () => {
+if (scanning) return;
 
-reader.style.display = "block";
+scanning = true;
 
-codeReader = new ZXing.BrowserMultiFormatReader();
+reader.classList.add("active");
+reader.innerHTML = `<video id="camera" playsinline></video>`;
 
-codeReader.decodeFromVideoDevice(
-null,
-"reader",
-(result, err) => {
+try {
 
 ```
-  if (result) {
-
-    const text = result.getText();
-
-    input.value = normalizeBarcode(text);
-
-    codeReader.reset();
-
-    reader.style.display = "none";
-
-    searchProduct();
-  }
-
-}
-```
-
+const result = await codeReader.decodeOnceFromVideoDevice(
+  null,
+  "camera"
 );
 
-});
+barcodeInput.value = cleanBarcode(result.text);
+
+reader.innerHTML = "";
+reader.classList.remove("active");
+scanning = false;
+
+searchBarcode(result.text);
+```
+
+} catch (err) {
+
+```
+alert("เปิดกล้องไม่ได้");
+
+reader.innerHTML = "";
+reader.classList.remove("active");
+scanning = false;
+```
+
+}
+
+};
