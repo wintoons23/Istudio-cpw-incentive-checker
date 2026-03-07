@@ -2,155 +2,268 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
+  }
+
+/* ===== Background ===== */
 
 body {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f5f5f7;
-  color: #1d1d1f;
-  display: flex;
-  justify-content: center;
-  padding: 40px 16px;
+font-family:
+    "Inter",
+    "Noto Sans Thai",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+
+background-image: url("img/bg.jpg");
+background-size: cover;
+background-position: center;
+background-attachment: fixed;
+
+min-height: 100vh;
+
+display: flex;
+justify-content: center;
+
+padding: 40px 16px;
+
+color: #1d1d1f;
 }
 
+/* overlay เพื่อทำให้ glass เด่น */
+
+body::before {
+content: "";
+
+position: fixed;
+inset: 0;
+
+backdrop-filter: blur(6px);
+
+background: rgba(255,255,255,0.15);
+
+z-index: -1;
+}
+
+/* ===== Container ===== */
+
 .app {
-  width: 100%;
-  max-width: 420px;
+width: 100%;
+max-width: 420px;
 }
 
 /* ===== Header ===== */
+
 .header {
-  text-align: center;
-  margin-bottom: 32px;
+text-align: center;
+margin-bottom: 32px;
 }
 
 .header h1 {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
+font-size: 28px;
+font-weight: 700;
 }
 
-/* ===== Card ===== */
+/* ===== Glass Card ===== */
+
 .card {
-  background: #ffffff;
-  border-radius: 28px;
-  padding: 28px;
-  margin-bottom: 24px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+
+background: rgba(255,255,255,0.55);
+
+backdrop-filter: blur(25px);
+-webkit-backdrop-filter: blur(25px);
+
+border-radius: 26px;
+
+padding: 28px;
+
+margin-bottom: 24px;
+
+border: 1px solid rgba(255,255,255,0.6);
+
+box-shadow:
+0 20px 40px rgba(0,0,0,0.15),
+inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+/* ===== Label ===== */
+
+label {
+font-size: 13px;
+color: #4b5563;
 }
 
 /* ===== Input ===== */
-label {
-  font-size: 13px;
-  color: #6e6e73;
-}
 
 input {
-  width: 100%;
-  margin-top: 10px;
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid #d2d2d7;
-  background: #f5f5f7;
-  font-size: 16px;
+width: 100%;
+
+margin-top: 10px;
+
+padding: 16px;
+
+border-radius: 16px;
+
+border: 1px solid rgba(255,255,255,0.6);
+
+background: rgba(255,255,255,0.6);
+
+backdrop-filter: blur(10px);
+
+font-size: 16px;
 }
 
 input:focus {
-  outline: none;
-  border-color: #0071e3;
-  background: #fff;
+outline: none;
+border-color: #0071e3;
 }
 
 /* ===== Buttons ===== */
+
 .btn-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 18px;
+display: grid;
+grid-template-columns: 1fr 1fr;
+
+gap: 12px;
+
+margin-top: 18px;
 }
 
 button {
-  padding: 16px;
-  border-radius: 18px;
-  border: none;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
+padding: 16px;
+
+border-radius: 16px;
+
+border: none;
+
+font-size: 15px;
+
+font-weight: 600;
+
+cursor: pointer;
+
+transition: all 0.2s ease;
 }
 
-/* Primary */
+button:hover {
+transform: translateY(-2px);
+}
+
+/* ===== Primary Button ===== */
+
 .check-btn {
-  margin-top: 16px;
-  width: 100%;
-  background: #1d1d1f;
-  color: #ffffff;
+
+margin-top: 16px;
+
+width: 100%;
+
+background: rgba(97, 129, 161, 0.9);
+
+color: white;
+
+backdrop-filter: blur(10px);
 }
 
-/* Secondary */
-.scan-btn {
-  background: #ffffff;
-  color: #1d1d1f;
-  border: 1px solid #d2d2d7;
-}
+/* ===== Secondary Buttons ===== */
 
+.scan-btn,
 .upload-btn {
-  background: #ffffff;
-  color: #1d1d1f;
-  border: 1px solid #d2d2d7;
+
+background: rgba(255,255,255,0.6);
+
+border: 1px solid rgba(255,255,255,0.7);
+
 }
 
 /* ===== Camera ===== */
+
 #reader {
-  display: none;              /* default ซ่อน */
-  margin-top: 20px;
-  border-radius: 20px;
-  overflow: hidden;
-  background: #000;
+display: none;
+
+margin-top: 20px;
+
+border-radius: 20px;
+
+overflow: hidden;
+
+background: black;
 }
 
 #reader.active {
-  display: block;
+display: block;
 }
 
 #reader video {
-  width: 100%;
-  height: 300px;
-  object-fit: cover;
+width: 100%;
+
+height: 300px;
+
+object-fit: cover;
 }
 
-/* ===== Product ===== */
+/* ===== Product Image ===== */
+
 .product-image {
-  display: none;
-  margin-top: 20px;
-  text-align: center;
+display: none;
+
+margin-top: 20px;
+
+text-align: center;
 }
 
 .product-image img {
-  width: 100%;
-  max-width: 240px;
-  border-radius: 20px;
+
+width: 100%;
+
+max-width: 240px;
+
+border-radius: 16px;
+
+box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
 /* ===== Result ===== */
+
+.result h2 {
+
+font-size: 20px;
+
+margin-bottom: 12px;
+}
+
 .result-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 14px 0;
-  border-top: 1px solid #eee;
+
+display: flex;
+
+justify-content: space-between;
+
+padding: 14px 0;
+
+border-top: 1px solid rgba(0,0,0,0.05);
 }
 
 .result-row span {
-  color: #6e6e73;
+
+color: #4b5563;
 }
 
 .result-row strong {
-  font-size: 18px;
-  font-weight: 600;
+
+font-size: 18px;
+
+font-weight: 600;
 }
 
 /* ===== Extra ===== */
+
 #incentiveExtra {
-  margin-top: 16px;
-  font-size: 13px;
-  color: #6e6e73;
+
+margin-top: 16px;
+
+font-size: 13px;
+
+color: #4b5563;
+}
+
+.extra {
+margin-top: 8px;
 }
