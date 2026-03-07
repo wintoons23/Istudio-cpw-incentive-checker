@@ -1,153 +1,147 @@
-const barcodeInput = document.getElementById("barcodeInput");
+let database = [];
+
+// ===== โหลด database =====
+async function loadDatabase() {
+const res = await fetch("database.json");
+database = await res.json();
+}
+
+loadDatabase();
+
+// ===== DOM =====
+const input = document.getElementById("barcodeInput");
 const searchBtn = document.getElementById("searchBtn");
 const scanBtn = document.getElementById("scanBtn");
-const uploadBtn = document.getElementById("uploadBtn");
-const fileInput = document.getElementById("fileInput");
 
-const productNameEl = document.getElementById("productName");
+const productName = document.getElementById("productName");
 const staffCom = document.getElementById("staffCom");
 const leaderCom = document.getElementById("leaderCom");
 const tamagCom = document.getElementById("tamagCom");
 
-const incentiveExtra = document.getElementById("incentiveExtra");
-const incentiveDetail = document.getElementById("incentiveDetail");
-const incentiveDate = document.getElementById("incentiveDate");
+const reader = document.getElementById("reader");
 
-const readerEl = document.getElementById("reader");
-const productImageWrap = document.getElementById("productImageWrap");
-const productImage = document.getElementById("productImage");
+// ===== ทำความสะอาด barcode =====
+function normalizeBarcode(value) {
 
-let database = [];
-let scanning = false;
+return value
+.replace("(01)", "")      // ลบ prefix GS1
+.replace(/\s/g, "")       // ลบ space
+.replace(/\D/g, "")       // เอาเฉพาะตัวเลข
+.replace(/^0+/, "")       // ลบเลข 0 ข้างหน้า
+.trim();
 
-const codeReader = new ZXing.BrowserMultiFormatReader();
-
-/* ===== Load Database ===== */
-async function loadDatabase() {
-  const res = await fetch("database.json", { cache: "no-store" });
-  const raw = await res.json();
-  
-  const merged = [];
-  Object.keys(raw).forEach(key => {
-    if (Array.isArray(raw[key])) {
-      raw[key].forEach(item => {
-        if (item && item["Part Number"]) {
-          merged.push({
-            ...item,
-            __pn: String(item["Part Number"]).trim()
-          });
-        }
-      });
-    }
-  });
-  
-  database = merged;
-}
-loadDatabase();
-
-/* ===== Image ===== */
-function fetchProductImage(name) {
-  if (!name) {
-    productImageWrap.style.display = "none";
-    return;
-  }
-  
-  const keyword = name.replace(/-.*$/, "").trim();
-  productImage.src =
-    "https://via.placeholder.com/600x600?text=" +
-    encodeURIComponent(keyword);
-  
-  productImageWrap.style.display = "block";
 }
 
-/* ===== Search ===== */
-function searchBarcode(code) {
-  const clean = String(code).trim();
-  const product = database.find(p => p.__pn === clean);
-  
-  if (!product) {
-    productNameEl.innerText = "❌ ไม่พบสินค้า";
-    staffCom.innerText = "-";
-    leaderCom.innerText = "-";
-    tamagCom.innerText = "-";
-    incentiveExtra.style.display = "none";
-    productImageWrap.style.display = "none";
-    return;
-  }
-  
-  productNameEl.innerText = product["Model"] || "-";
-  staffCom.innerText = (product["Sales Staff"] || 0) + " บาท";
-  
-  const leaderTotal = Number(product["Store Leader"] || 0);
-  const split = Math.floor(leaderTotal / 2);
-  
-  leaderCom.innerText = split + " บาท";
-  tamagCom.innerText = split + " บาท";
-  
-  const detail = product["Incentive Details"];
-  const start = product["Start Date"];
-  const end = product["End Date"];
-  
-  if (detail || start || end) {
-    incentiveExtra.style.display = "block";
-    incentiveDetail.innerText = detail || "-";
-    incentiveDate.innerText =
-      start && end ? `${start} - ${end}` :
-      start ? `เริ่ม ${start}` : "-";
-  } else {
-    incentiveExtra.style.display = "none";
-  }
-  
-  fetchProductImage(product["Model"]);
+// ===== หา product =====
+function findProduct(part) {
+
+const cleaned = normalizeBarcode(part);
+
+return database.find(item => {
+
+```
+if (!item["Part Number"]) return false;
+
+const dbPart = normalizeBarcode(String(item["Part Number"]));
+
+return dbPart === cleaned;
+```
+
+});
+
 }
 
-/* ===== Events ===== */
-searchBtn.onclick = () => {
-  searchBarcode(barcodeInput.value);
-};
+// ===== แสดงสินค้า =====
+function showProduct(data) {
 
-/* ===== Scan Camera ===== */
-scanBtn.onclick = async () => {
-  if (scanning) return;
-  scanning = true;
-  
-  readerEl.classList.add("active");
-  readerEl.innerHTML = `<video id="camera" playsinline></video>`;
-  
-  try {
-    const result = await codeReader.decodeOnceFromVideoDevice(
-      null,
-      "camera"
-    );
-    
-    barcodeInput.value = result.text;
-    
-    readerEl.innerHTML = "";
-    readerEl.classList.remove("active");
-    scanning = false;
-    
-    searchBarcode(result.text);
-  } catch (err) {
-    alert("เปิดกล้องไม่ได้ หรือสแกนไม่สำเร็จ");
-    readerEl.innerHTML = "";
-    readerEl.classList.remove("active");
-    scanning = false;
+productName.innerText = data["Model"] || "-";
+
+staffCom.innerText = data["Sales Staff"] || "-";
+leaderCom.innerText = data["Store Leader"] || "-";
+
+const tamag =
+Number(data["Total incentive"]) -
+Number(data["Sales Staff"]) -
+Number(data["Store Leader"]);
+
+tamagCom.innerText = tamag || "-";
+
+}
+
+// ===== reset =====
+function clearResult() {
+
+productName.innerText = "ไม่พบสินค้า";
+staffCom.innerText = "-";
+leaderCom.innerText = "-";
+tamagCom.innerText = "-";
+
+}
+
+// ===== search =====
+function searchProduct() {
+
+const value = input.value;
+
+if (!value) {
+alert("กรอก Part Number ก่อน");
+return;
+}
+
+const product = findProduct(value);
+
+if (!product) {
+clearResult();
+return;
+}
+
+showProduct(product);
+
+}
+
+// ===== click search =====
+searchBtn.addEventListener("click", searchProduct);
+
+// ===== enter search =====
+input.addEventListener("keypress", function (e) {
+
+if (e.key === "Enter") {
+searchProduct();
+}
+
+});
+
+// ===== scanner =====
+let codeReader;
+
+scanBtn.addEventListener("click", () => {
+
+reader.style.display = "block";
+
+codeReader = new ZXing.BrowserMultiFormatReader();
+
+codeReader.decodeFromVideoDevice(
+null,
+"reader",
+(result, err) => {
+
+```
+  if (result) {
+
+    const text = result.getText();
+
+    input.value = normalizeBarcode(text);
+
+    codeReader.reset();
+
+    reader.style.display = "none";
+
+    searchProduct();
   }
-};
 
-/* ===== Gallery ===== */
-uploadBtn.onclick = () => fileInput.click();
+}
+```
 
-fileInput.onchange = async e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  
-  const img = document.createElement("img");
-  img.src = URL.createObjectURL(file);
-  
-  img.onload = async () => {
-    const result = await codeReader.decodeFromImageElement(img);
-    barcodeInput.value = result.text;
-    searchBarcode(result.text);
-  };
-};
+);
+
+});
