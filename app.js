@@ -1,12 +1,11 @@
-/* =====================================================
-Incentive Checker - Complete Version
-===================================================== */
-
-/* ===== Elements ===== */
+/* =====================================
+Elements
+===================================== */
 
 const barcodeInput = document.getElementById("barcodeInput");
 const searchBtn = document.getElementById("searchBtn");
 const scanBtn = document.getElementById("scanBtn");
+
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
 
@@ -16,14 +15,13 @@ const leaderCom = document.getElementById("leaderCom");
 
 const reader = document.getElementById("reader");
 
-/* ===== Database ===== */
+/* =====================================
+Database
+===================================== */
 
 let database = [];
 let scanning = false;
-
-/* =====================================================
-โหลด database.json
-===================================================== */
+let detected = false;
 
 async function loadDatabase(){
 
@@ -32,35 +30,11 @@ try{
 const res = await fetch("database.json",{cache:"no-store"});
 const data = await res.json();
 
-/* รองรับทั้ง JSON array และ grouped JSON */
-
-let rows = [];
-
-if(Array.isArray(data)){
-
-rows = data;
-
-}else{
-
-Object.keys(data).forEach(key=>{
-
-if(Array.isArray(data[key])){
-rows = rows.concat(data[key]);
-}
-
-});
-
-}
-
-/* normalize Part Number */
-
-database = rows
+database = data
 .filter(r=>r && r["Part Number"])
 .map(r=>{
 
-const raw = String(r["Part Number"]);
-
-const clean = raw
+const clean = String(r["Part Number"])
 .replace(/[^\w]/g,"")
 .trim();
 
@@ -81,9 +55,9 @@ alert("โหลด database.json ไม่สำเร็จ");
 
 loadDatabase();
 
-/* =====================================================
-ค้นหาสินค้า
-===================================================== */
+/* =====================================
+Search
+===================================== */
 
 function searchBarcode(code){
 
@@ -99,7 +73,7 @@ item=>item.__pn_clean === input
 
 if(!product){
 
-productName.innerText = "ไม่พบ Part Number นี้";
+productName.innerText = "ไม่พบสินค้า";
 staffCom.innerText = "-";
 leaderCom.innerText = "-";
 
@@ -113,9 +87,9 @@ leaderCom.innerText = (product["Store Leader"] || 0) + " บาท";
 
 }
 
-/* =====================================================
-ปุ่มค้นหา
-===================================================== */
+/* =====================================
+Search Button
+===================================== */
 
 searchBtn.addEventListener("click",()=>{
 
@@ -123,28 +97,32 @@ searchBarcode(barcodeInput.value);
 
 });
 
-/* =====================================================
-Scan กล้อง (Quagga)
-===================================================== */
+/* =====================================
+Camera Scan
+===================================== */
 
 scanBtn.addEventListener("click",()=>{
 
 if(scanning) return;
 
 scanning = true;
+detected = false;
 
-reader.innerHTML = "";
-
-/* init scanner */
+reader.style.display = "block";
 
 Quagga.init({
 
 inputStream:{
+
 type:"LiveStream",
 target:reader,
+
 constraints:{
+width:1280,
+height:720,
 facingMode:"environment"
 }
+
 },
 
 locator:{
@@ -152,17 +130,15 @@ patchSize:"medium",
 halfSample:true
 },
 
-numOfWorkers:4,
+numOfWorkers:navigator.hardwareConcurrency || 4,
 
 decoder:{
 readers:[
-
 "code_128_reader",
 "ean_reader",
 "ean_8_reader",
 "upc_reader",
 "upc_e_reader"
-
 ]
 },
 
@@ -173,10 +149,10 @@ locate:true
 if(err){
 
 console.error(err);
-
 alert("เปิดกล้องไม่ได้");
 
-scanning = false;
+scanning=false;
+reader.style.display="none";
 
 return;
 
@@ -186,9 +162,8 @@ Quagga.start();
 
 });
 
-/* detect barcode */
+});
 
-let detected = false;
 
 Quagga.onDetected(result=>{
 
@@ -202,19 +177,17 @@ barcodeInput.value = code;
 
 Quagga.stop();
 
-reader.innerHTML = "";
+reader.style.display="none";
 
-scanning = false;
+scanning=false;
 
 searchBarcode(code);
 
 });
 
-});
-
-/* =====================================================
-Scan จากรูป (ZXing)
-===================================================== */
+/* =====================================
+Scan from Image
+===================================== */
 
 const codeReader = new ZXing.BrowserMultiFormatReader();
 
@@ -231,7 +204,6 @@ const file = e.target.files[0];
 if(!file) return;
 
 const img = document.createElement("img");
-
 img.src = URL.createObjectURL(file);
 
 img.onload = async ()=>{
@@ -248,9 +220,7 @@ searchBarcode(code);
 
 }catch(err){
 
-alert("อ่าน barcode จากรูปไม่ออก");
-
-console.error(err);
+alert("อ่าน barcode ไม่ได้");
 
 }
 
