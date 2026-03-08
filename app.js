@@ -1,4 +1,8 @@
-/* ================= ELEMENT ================= */
+/* =====================================================
+Incentive Checker - Complete Version
+===================================================== */
+
+/* ===== Elements ===== */
 
 const barcodeInput = document.getElementById("barcodeInput");
 const searchBtn = document.getElementById("searchBtn");
@@ -9,13 +13,17 @@ const fileInput = document.getElementById("fileInput");
 const productName = document.getElementById("productName");
 const staffCom = document.getElementById("staffCom");
 const leaderCom = document.getElementById("leaderCom");
-const readerEl = document.getElementById("reader");
+
+const reader = document.getElementById("reader");
+
+/* ===== Database ===== */
 
 let database = [];
 let scanning = false;
-let stream = null;
 
-/* ================= โหลด Database ================= */
+/* =====================================================
+โหลด database.json
+===================================================== */
 
 async function loadDatabase(){
 
@@ -24,33 +32,48 @@ try{
 const res = await fetch("database.json",{cache:"no-store"});
 const data = await res.json();
 
-let allRows = [];
+/* รองรับทั้ง JSON array และ grouped JSON */
+
+let rows = [];
+
+if(Array.isArray(data)){
+
+rows = data;
+
+}else{
 
 Object.keys(data).forEach(key=>{
+
 if(Array.isArray(data[key])){
-allRows = allRows.concat(data[key]);
+rows = rows.concat(data[key]);
 }
+
 });
+
+}
 
 /* normalize Part Number */
 
-database = allRows
+database = rows
 .filter(r=>r && r["Part Number"])
 .map(r=>{
 
 const raw = String(r["Part Number"]);
-const clean = raw.replace(/[^\w]/g,"").trim();
+
+const clean = raw
+.replace(/[^\w]/g,"")
+.trim();
 
 return {...r,__pn_clean:clean};
 
 });
 
-console.log("DB Loaded:",database.length);
+console.log("Database Loaded:",database.length);
 
 }catch(err){
 
-alert("โหลด database ไม่ได้");
 console.error(err);
+alert("โหลด database.json ไม่สำเร็จ");
 
 }
 
@@ -58,7 +81,9 @@ console.error(err);
 
 loadDatabase();
 
-/* ================= ค้นหาสินค้า ================= */
+/* =====================================================
+ค้นหาสินค้า
+===================================================== */
 
 function searchBarcode(code){
 
@@ -83,12 +108,14 @@ return;
 }
 
 productName.innerText = product["Model"] || "-";
-staffCom.innerText = (product["Sales Staff"] || 0)+" บาท";
-leaderCom.innerText = (product["Store Leader"] || 0)+" บาท";
+staffCom.innerText = (product["Sales Staff"] || 0) + " บาท";
+leaderCom.innerText = (product["Store Leader"] || 0) + " บาท";
 
 }
 
-/* ================= ปุ่มค้นหา ================= */
+/* =====================================================
+ปุ่มค้นหา
+===================================================== */
 
 searchBtn.addEventListener("click",()=>{
 
@@ -96,65 +123,25 @@ searchBarcode(barcodeInput.value);
 
 });
 
-/* ================= ปิดกล้อง ================= */
+/* =====================================================
+Scan กล้อง (Quagga)
+===================================================== */
 
-function stopScanner(){
-
-try{
-
-if(stream){
-stream.getTracks().forEach(t=>t.stop());
-stream = null;
-}
-
-Quagga.stop();
-
-}catch(e){}
-
-readerEl.innerHTML = "";
-
-scanning = false;
-
-}
-
-/* ================= Scan กล้อง ================= */
-
-scanBtn.addEventListener("click",async ()=>{
+scanBtn.addEventListener("click",()=>{
 
 if(scanning) return;
 
 scanning = true;
 
-/* สร้าง video */
+reader.innerHTML = "";
 
-readerEl.innerHTML =
-'<video id="camera" playsinline style="width:100%;height:320px;background:#000"></video>';
-
-try{
-
-stream = await navigator.mediaDevices.getUserMedia({
-
-video:{
-facingMode:{ideal:"environment"},
-width:{ideal:1280},
-height:{ideal:720}
-}
-
-});
-
-const video = document.getElementById("camera");
-
-video.srcObject = stream;
-
-await video.play();
-
-/* init quagga */
+/* init scanner */
 
 Quagga.init({
 
 inputStream:{
 type:"LiveStream",
-target:video,
+target:reader,
 constraints:{
 facingMode:"environment"
 }
@@ -177,7 +164,6 @@ readers:[
 "upc_e_reader"
 
 ]
-
 },
 
 locate:true
@@ -188,9 +174,9 @@ if(err){
 
 console.error(err);
 
-alert("Quagga init ไม่สำเร็จ");
+alert("เปิดกล้องไม่ได้");
 
-stopScanner();
+scanning = false;
 
 return;
 
@@ -200,7 +186,7 @@ Quagga.start();
 
 });
 
-/* scan สำเร็จ */
+/* detect barcode */
 
 let detected = false;
 
@@ -214,29 +200,29 @@ const code = result.codeResult.code;
 
 barcodeInput.value = code;
 
-stopScanner();
+Quagga.stop();
+
+reader.innerHTML = "";
+
+scanning = false;
 
 searchBarcode(code);
 
 });
 
-}catch(err){
-
-console.error(err);
-
-alert("เปิดกล้องไม่ได้ (ต้องใช้ https หรือ localhost)");
-
-stopScanner();
-
-}
-
 });
 
-/* ================= Scan จากรูป ================= */
+/* =====================================================
+Scan จากรูป (ZXing)
+===================================================== */
 
 const codeReader = new ZXing.BrowserMultiFormatReader();
 
-uploadBtn.addEventListener("click",()=>fileInput.click());
+uploadBtn.addEventListener("click",()=>{
+
+fileInput.click();
+
+});
 
 fileInput.addEventListener("change",async e=>{
 
@@ -262,7 +248,7 @@ searchBarcode(code);
 
 }catch(err){
 
-alert("อ่านโค้ดจากรูปไม่ออก");
+alert("อ่าน barcode จากรูปไม่ออก");
 
 console.error(err);
 
