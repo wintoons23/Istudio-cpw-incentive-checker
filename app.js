@@ -1,250 +1,273 @@
-/* =========================================
-Incentive Checker - Stable Version
-เวอร์ชั่นเสถียร ใช้งานจริงได้
-========================================= */
+/* ================= ELEMENT ================= */
 
-let scanner = null
-let products = []
+const barcodeInput = document.getElementById("barcodeInput");
+const searchBtn = document.getElementById("searchBtn");
+const scanBtn = document.getElementById("scanBtn");
+const uploadBtn = document.getElementById("uploadBtn");
+const fileInput = document.getElementById("fileInput");
 
-/* =========================================
-โหลด database.json
-========================================= */
+const productName = document.getElementById("productName");
+const staffCom = document.getElementById("staffCom");
+const leaderCom = document.getElementById("leaderCom");
+const readerEl = document.getElementById("reader");
 
-fetch("database.json")
-.then(res => res.json())
-.then(data => {
-products = data
-})
-.catch(err => {
-console.error("โหลด database ไม่สำเร็จ", err)
-})
+let database = [];
+let scanning = false;
+let stream = null;
 
-/* =========================================
-Elements ต่างๆ
-========================================= */
+/* ================= โหลด Database ================= */
 
-const input = document.getElementById("barcodeInput")
-const searchBtn = document.getElementById("searchBtn")
-const scanBtn = document.getElementById("scanBtn")
-const uploadBtn = document.getElementById("uploadBtn")
-const fileInput = document.getElementById("fileInput")
-const reader = document.getElementById("reader")
+async function loadDatabase(){
 
-const productName = document.getElementById("productName")
-const staffCom = document.getElementById("staffCom")
-const leaderCom = document.getElementById("leaderCom")
-const tamagCom = document.getElementById("tamagCom")
+try{
 
-const incentiveExtra = document.getElementById("incentiveExtra")
-const incentiveDetail = document.getElementById("incentiveDetail")
-const incentiveDate = document.getElementById("incentiveDate")
+const res = await fetch("database.json",{cache:"no-store"});
+const data = await res.json();
 
-/* =========================================
-ฟังก์ชันทำความสะอาด barcode
-========================================= */
+let allRows = [];
 
-function cleanBarcode(code){
+Object.keys(data).forEach(key=>{
+if(Array.isArray(data[key])){
+allRows = allRows.concat(data[key]);
+}
+});
 
-if(!code) return ""
+/* normalize Part Number */
 
-return String(code)
-.replace(/\s/g,"")
-.replace(/\n/g,"")
-.trim()
+database = allRows
+.filter(r=>r && r["Part Number"])
+.map(r=>{
+
+const raw = String(r["Part Number"]);
+const clean = raw.replace(/[^\w]/g,"").trim();
+
+return {...r,__pn_clean:clean};
+
+});
+
+console.log("DB Loaded:",database.length);
+
+}catch(err){
+
+alert("โหลด database ไม่ได้");
+console.error(err);
 
 }
 
-/* =========================================
-ค้นหาสินค้า
-========================================= */
-
-function searchProduct(code){
-
-const clean = cleanBarcode(code)
-
-if(!clean){
-alert("กรุณากรอก Part Number")
-return
 }
 
-const product = products.find(p =>
-cleanBarcode(p["Part Number"]) === clean
-)
+loadDatabase();
+
+/* ================= ค้นหาสินค้า ================= */
+
+function searchBarcode(code){
+
+if(!code) return;
+
+const input = String(code)
+.replace(/[^\w]/g,"")
+.trim();
+
+const product = database.find(
+item=>item.__pn_clean === input
+);
 
 if(!product){
 
-productName.innerText = "ไม่พบสินค้า ❌"
-staffCom.innerText = "-"
-leaderCom.innerText = "-"
-tamagCom.innerText = "-"
-incentiveExtra.style.display = "none"
+productName.innerText = "ไม่พบ Part Number นี้";
+staffCom.innerText = "-";
+leaderCom.innerText = "-";
 
-return
-}
-
-/* แสดงข้อมูลสินค้า */
-
-productName.innerText = product.Model || "-"
-
-staffCom.innerText = product["Sales Staff"] || "-"
-leaderCom.innerText = product["Store Leader"] || "-"
-
-/* คำนวณ incentive ตาแม็ก */
-
-const leader = Number(product["Store Leader"]) || 0
-tamagCom.innerText = leader / 2
-
-/* ข้อมูลเพิ่มเติม */
-
-incentiveDetail.innerText = product["Incentive Details"] || "-"
-incentiveDate.innerText =
-(product["Start Date"] || "") + " - " +
-(product["End Date"] || "")
-
-incentiveExtra.style.display = "block"
+return;
 
 }
 
-/* =========================================
-ปุ่ม Check Incentive
-========================================= */
+productName.innerText = product["Model"] || "-";
+staffCom.innerText = (product["Sales Staff"] || 0)+" บาท";
+leaderCom.innerText = (product["Store Leader"] || 0)+" บาท";
 
-searchBtn.addEventListener("click", ()=>{
-
-searchProduct(input.value)
-
-})
-
-/* =========================================
-กด Enter เพื่อค้นหา
-========================================= */
-
-input.addEventListener("keypress", (e)=>{
-
-if(e.key==="Enter"){
-searchProduct(input.value)
 }
 
-})
+/* ================= ปุ่มค้นหา ================= */
 
-/* =========================================
-ระบบ Scan กล้อง
-========================================= */
+searchBtn.addEventListener("click",()=>{
 
-scanBtn.addEventListener("click", async ()=>{
+searchBarcode(barcodeInput.value);
 
-reader.classList.add("active")
+});
+
+/* ================= ปิดกล้อง ================= */
+
+function stopScanner(){
 
 try{
 
-/* ถ้ามี scanner เก่าให้ปิดก่อน */
-
-if(scanner){
-await scanner.stop().catch(()=>{})
+if(stream){
+stream.getTracks().forEach(t=>t.stop());
+stream = null;
 }
 
-/* สร้าง scanner */
+Quagga.stop();
 
-scanner = new Html5Qrcode("reader")
+}catch(e){}
 
-/* ดึงรายการกล้อง */
+readerEl.innerHTML = "";
 
-const cameras = await Html5Qrcode.getCameras()
+scanning = false;
 
-if(!cameras.length){
-alert("ไม่พบกล้อง")
-return
 }
 
-/* เลือกกล้องหลัง */
+/* ================= Scan กล้อง ================= */
 
-const backCamera =
-cameras.find(c =>
-c.label.toLowerCase().includes("back")
-) || cameras[0]
+scanBtn.addEventListener("click",async ()=>{
 
-/* เริ่ม scan */
+if(scanning) return;
 
-await scanner.start(
+scanning = true;
 
-backCamera.id,
+/* สร้าง video */
 
-{
-fps:20,
+readerEl.innerHTML =
+'<video id="camera" playsinline style="width:100%;height:320px;background:#000"></video>';
 
-qrbox:{
-width:280,
-height:120
+try{
+
+stream = await navigator.mediaDevices.getUserMedia({
+
+video:{
+facingMode:{ideal:"environment"},
+width:{ideal:1280},
+height:{ideal:720}
+}
+
+});
+
+const video = document.getElementById("camera");
+
+video.srcObject = stream;
+
+await video.play();
+
+/* init quagga */
+
+Quagga.init({
+
+inputStream:{
+type:"LiveStream",
+target:video,
+constraints:{
+facingMode:"environment"
+}
 },
 
-aspectRatio:1.7
+locator:{
+patchSize:"medium",
+halfSample:true
+},
+
+numOfWorkers:4,
+
+decoder:{
+readers:[
+
+"code_128_reader",
+"ean_reader",
+"ean_8_reader",
+"upc_reader",
+"upc_e_reader"
+
+]
 
 },
+
+locate:true
+
+},err=>{
+
+if(err){
+
+console.error(err);
+
+alert("Quagga init ไม่สำเร็จ");
+
+stopScanner();
+
+return;
+
+}
+
+Quagga.start();
+
+});
 
 /* scan สำเร็จ */
 
-(decodedText)=>{
+let detected = false;
 
-const clean = cleanBarcode(decodedText)
+Quagga.onDetected(result=>{
 
-input.value = clean
+if(detected) return;
 
-searchProduct(clean)
+detected = true;
 
-/* ปิดกล้อง */
+const code = result.codeResult.code;
 
-scanner.stop().catch(()=>{})
+barcodeInput.value = code;
 
-reader.classList.remove("active")
+stopScanner();
 
-},
+searchBarcode(code);
 
-(err)=>{}
-
-)
+});
 
 }catch(err){
 
-console.error(err)
+console.error(err);
 
-alert("เปิดกล้องไม่ได้")
+alert("เปิดกล้องไม่ได้ (ต้องใช้ https หรือ localhost)");
+
+stopScanner();
 
 }
 
-})
+});
 
-/* =========================================
-Select From Gallery
-========================================= */
+/* ================= Scan จากรูป ================= */
 
-uploadBtn.addEventListener("click", ()=>{
+const codeReader = new ZXing.BrowserMultiFormatReader();
 
-fileInput.click()
+uploadBtn.addEventListener("click",()=>fileInput.click());
 
-})
+fileInput.addEventListener("change",async e=>{
 
-fileInput.addEventListener("change", async (e)=>{
+const file = e.target.files[0];
 
-const file = e.target.files[0]
+if(!file) return;
 
-if(!file) return
+const img = document.createElement("img");
 
-const tempScanner = new Html5Qrcode("reader")
+img.src = URL.createObjectURL(file);
+
+img.onload = async ()=>{
 
 try{
 
-const result = await tempScanner.scanFile(file,true)
+const result = await codeReader.decodeFromImageElement(img);
 
-const clean = cleanBarcode(result)
+const code = result.text;
 
-input.value = clean
+barcodeInput.value = code;
 
-searchProduct(clean)
+searchBarcode(code);
 
 }catch(err){
 
-alert("อ่าน barcode จากรูปไม่ได้")
+alert("อ่านโค้ดจากรูปไม่ออก");
+
+console.error(err);
 
 }
 
-})
+};
+
+});
