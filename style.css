@@ -1,4 +1,181 @@
-/* ===== Scanner ===== */
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+
+font-family:
+"Inter",
+"Noto Sans Thai",
+-apple-system,
+BlinkMacSystemFont,
+sans-serif;
+
+background-image:url("img/bg.jpg");
+background-size:cover;
+background-position:center;
+background-attachment:fixed;
+
+min-height:100vh;
+
+display:flex;
+justify-content:center;
+
+padding:40px 16px;
+
+color:#1d1d1f;
+
+}
+
+body::before{
+
+content:"";
+
+position:fixed;
+inset:0;
+
+backdrop-filter:blur(6px);
+
+background:rgba(255,255,255,0.15);
+
+z-index:-1;
+
+}
+
+/* APP */
+
+.app{
+width:100%;
+max-width:420px;
+}
+
+/* HEADER */
+
+.header{
+text-align:center;
+margin-bottom:32px;
+}
+
+.header h1{
+font-size:26px;
+font-weight:700;
+}
+
+/* CARD */
+
+.card{
+
+background:rgba(255,255,255,0.55);
+
+backdrop-filter:blur(25px);
+-webkit-backdrop-filter:blur(25px);
+
+border-radius:26px;
+
+padding:28px;
+
+margin-bottom:24px;
+
+border:1px solid rgba(255,255,255,0.6);
+
+box-shadow:
+0 20px 40px rgba(0,0,0,0.15),
+inset 0 1px 0 rgba(255,255,255,0.7);
+
+}
+
+/* FORM */
+
+label{
+font-size:13px;
+color:#4b5563;
+}
+
+input{
+
+width:100%;
+margin-top:10px;
+
+padding:16px;
+
+border-radius:16px;
+
+border:1px solid rgba(255,255,255,0.6);
+
+background:rgba(255,255,255,0.6);
+
+backdrop-filter:blur(10px);
+
+font-size:16px;
+
+}
+
+input:focus{
+outline:none;
+border-color:#0071e3;
+}
+
+/* BUTTONS */
+
+.btn-group{
+
+display:grid;
+grid-template-columns:1fr 1fr;
+
+gap:12px;
+
+margin-top:18px;
+
+}
+
+button{
+
+padding:16px;
+
+border-radius:16px;
+
+border:none;
+
+font-size:15px;
+
+font-weight:600;
+
+cursor:pointer;
+
+transition:all 0.2s ease;
+
+}
+
+button:hover{
+transform:translateY(-2px);
+}
+
+.check-btn{
+
+margin-top:16px;
+
+width:100%;
+
+background:rgba(97,129,161,0.9);
+
+color:white;
+
+}
+
+.scan-btn,
+.upload-btn{
+
+background:rgba(255,255,255,0.6);
+
+border:1px solid rgba(255,255,255,0.7);
+
+}
+
+/* =========================
+SCANNER (FIX BUG)
+========================= */
 
 #reader{
 
@@ -21,13 +198,13 @@ position:relative;
 
 }
 
-/* ตอนเปิด scanner */
+/* scanner active */
 
 #reader.active{
 display:block;
 }
 
-/* video stream */
+/* video */
 
 #reader video{
 
@@ -40,7 +217,7 @@ border-radius:20px;
 
 }
 
-/* canvas ที่ quagga ใช้ */
+/* canvas overlay */
 
 #reader canvas{
 
@@ -54,19 +231,99 @@ height:100%;
 
 }
 
-/* ป้องกัน element quagga ล้น */
+/* quagga container fix */
 
 #reader > div{
+
 width:100% !important;
 height:100% !important;
+
 }
 
-/* mobile optimization */
+/* scan frame */
+
+#reader::after{
+
+content:"";
+
+position:absolute;
+
+top:50%;
+left:50%;
+
+width:70%;
+height:120px;
+
+transform:translate(-50%,-50%);
+
+border:3px solid rgba(0,255,0,0.8);
+
+border-radius:12px;
+
+pointer-events:none;
+
+}
+
+/* =========================
+RESULT
+========================= */
+
+.result h2{
+
+font-size:20px;
+margin-bottom:12px;
+
+}
+
+.result-row{
+
+display:flex;
+
+justify-content:space-between;
+
+padding:14px 0;
+
+border-top:1px solid rgba(0,0,0,0.05);
+
+}
+
+.result-row span{
+color:#4b5563;
+}
+
+.result-row strong{
+
+font-size:18px;
+font-weight:600;
+
+}
+
+#incentiveExtra{
+
+margin-top:16px;
+
+font-size:13px;
+
+color:#4b5563;
+
+}
+
+.extra{
+margin-top:8px;
+}
+
+/* =========================
+MOBILE
+========================= */
 
 @media (max-width:600px){
 
 #reader{
 height:240px;
+}
+
+.header h1{
+font-size:22px;
 }
 
 }
