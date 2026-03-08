@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-
 <html lang="th">
 <head>
 
 <meta charset="UTF-8">
-<title>iStudio by Copperwired Incentive Checker</title>
+<title>iStudio Incentive Checker</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -19,38 +18,36 @@
 <div class="app">
 
 <header class="header">
-<h1>iStudio OneBangkok Incentive Checker MAR 2026 🍏</h1>
+<h1>iStudio OneBangkok Incentive Checker 🍏</h1>
 </header>
 
 <section class="card">
 
-<label>กรอก Part Number</label>
+<label>กรอก / Scan Part Number</label>
 
 <input
 type="text"
 id="barcodeInput"
-placeholder="กรอก / scan / เลือกรูป"
+placeholder="กรอก / scan barcode"
 />
 
 <div class="btn-group">
 
-<button id="uploadBtn" class="upload-btn">
+<button id="uploadBtn">
 Select from Gallery
 </button>
 
-<button id="scanBtn" class="scan-btn">
+<button id="scanBtn">
 Scan Camera
 </button>
 
 </div>
 
 <button id="searchBtn" class="check-btn">
-Check Incentive 🍎
+Check Incentive
 </button>
 
 <input type="file" id="fileInput" hidden accept="image/*">
-
-<!-- พื้นที่แสดงกล้อง scanner -->
 
 <div id="reader"></div>
 
@@ -58,52 +55,24 @@ Check Incentive 🍎
 
 <section class="card result">
 
-<h2 id="productName">รอการค้นหา 👀</h2>
+<h2 id="productName">รอการค้นหา</h2>
 
 <div class="result-row">
-<span>Incentive Sales</span>
+<span>Sales</span>
 <strong id="staffCom">-</strong>
 </div>
 
 <div class="result-row">
-<span>Incentive พี่ปูน</span>
+<span>Store Leader</span>
 <strong id="leaderCom">-</strong>
-</div>
-
-<div class="result-row">
-<span>Incentive ตาแม็ก</span>
-<strong id="tamagCom">-</strong>
-</div>
-
-<div id="incentiveExtra" style="display:none">
-
-<div class="extra">
-<strong>รายละเอียด:</strong>
-<span id="incentiveDetail"></span>
-</div>
-
-<div class="extra">
-<strong>ช่วงเวลา:</strong>
-<span id="incentiveDate"></span>
-</div>
-
 </div>
 
 </section>
 
 </div>
 
-<!-- ================= Barcode Scanner Libraries ================= -->
-
-<!-- กล้อง Scan Barcode -->
-
 <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
-
-<!-- Scan Barcode จากรูป -->
-
 <script src="https://unpkg.com/@zxing/library@latest"></script>
-
-<!-- ================= App Script ================= -->
 
 <script src="app.js"></script>
 
