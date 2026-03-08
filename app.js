@@ -1,14 +1,14 @@
-/* =======================================================
-Incentive Checker - Smart Barcode Scanner
-เวอร์ชั่นปรับปรุงเสถียรและเร็วขึ้น
-======================================================= */
+/* =========================================
+Incentive Checker - Stable Version
+เวอร์ชั่นเสถียร ใช้งานจริงได้
+========================================= */
 
 let scanner = null
 let products = []
 
-/* =======================================================
+/* =========================================
 โหลด database.json
-======================================================= */
+========================================= */
 
 fetch("database.json")
 .then(res => res.json())
@@ -19,16 +19,15 @@ products = data
 console.error("โหลด database ไม่สำเร็จ", err)
 })
 
-/* =======================================================
-Element ต่างๆ
-======================================================= */
+/* =========================================
+Elements ต่างๆ
+========================================= */
 
 const input = document.getElementById("barcodeInput")
 const searchBtn = document.getElementById("searchBtn")
 const scanBtn = document.getElementById("scanBtn")
 const uploadBtn = document.getElementById("uploadBtn")
 const fileInput = document.getElementById("fileInput")
-
 const reader = document.getElementById("reader")
 
 const productName = document.getElementById("productName")
@@ -40,247 +39,212 @@ const incentiveExtra = document.getElementById("incentiveExtra")
 const incentiveDetail = document.getElementById("incentiveDetail")
 const incentiveDate = document.getElementById("incentiveDate")
 
-/* =======================================================
+/* =========================================
 ฟังก์ชันทำความสะอาด barcode
-กันปัญหา newline / space / invisible char
-======================================================= */
+========================================= */
 
 function cleanBarcode(code){
 
-```
 if(!code) return ""
 
 return String(code)
-    .replace(/\s/g,"")      // ลบ space
-    .replace(/\n/g,"")      // ลบ newline
-    .trim()
-```
+.replace(/\s/g,"")
+.replace(/\n/g,"")
+.trim()
 
 }
 
-/* =======================================================
-ค้นหา Part Number
-======================================================= */
+/* =========================================
+ค้นหาสินค้า
+========================================= */
 
 function searchProduct(code){
 
-```
 const clean = cleanBarcode(code)
 
 if(!clean){
-    alert("กรุณากรอก Part Number")
-    return
+alert("กรุณากรอก Part Number")
+return
 }
 
-const product = products.find(p => 
-    cleanBarcode(p["Part Number"]) === clean
+const product = products.find(p =>
+cleanBarcode(p["Part Number"]) === clean
 )
 
 if(!product){
 
-    productName.innerText = "ไม่พบสินค้า ❌"
-    staffCom.innerText = "-"
-    leaderCom.innerText = "-"
-    tamagCom.innerText = "-"
-    incentiveExtra.style.display = "none"
+productName.innerText = "ไม่พบสินค้า ❌"
+staffCom.innerText = "-"
+leaderCom.innerText = "-"
+tamagCom.innerText = "-"
+incentiveExtra.style.display = "none"
 
-    return
+return
 }
 
 /* แสดงข้อมูลสินค้า */
 
-productName.innerText = product.Model
+productName.innerText = product.Model || "-"
 
 staffCom.innerText = product["Sales Staff"] || "-"
 leaderCom.innerText = product["Store Leader"] || "-"
 
-/* หาร incentive ให้ตาแม็ก */
+/* คำนวณ incentive ตาแม็ก */
 
 const leader = Number(product["Store Leader"]) || 0
-tamagCom.innerText = leader/2
+tamagCom.innerText = leader / 2
 
-/* แสดงข้อมูลเพิ่ม */
+/* ข้อมูลเพิ่มเติม */
 
 incentiveDetail.innerText = product["Incentive Details"] || "-"
-incentiveDate.innerText = product["Start Date"] + " - " + product["End Date"]
+incentiveDate.innerText =
+(product["Start Date"] || "") + " - " +
+(product["End Date"] || "")
 
 incentiveExtra.style.display = "block"
-```
 
 }
 
-/* =======================================================
-ปุ่มค้นหาปกติ
-======================================================= */
+/* =========================================
+ปุ่ม Check Incentive
+========================================= */
 
-searchBtn.addEventListener("click", () => {
+searchBtn.addEventListener("click", ()=>{
 
-```
 searchProduct(input.value)
-```
 
 })
 
-/* =======================================================
+/* =========================================
 กด Enter เพื่อค้นหา
-======================================================= */
+========================================= */
 
 input.addEventListener("keypress", (e)=>{
 
-```
 if(e.key==="Enter"){
-    searchProduct(input.value)
+searchProduct(input.value)
 }
-```
 
 })
 
-/* =======================================================
+/* =========================================
 ระบบ Scan กล้อง
-======================================================= */
+========================================= */
 
-scanBtn.addEventListener("click", async () => {
+scanBtn.addEventListener("click", async ()=>{
 
-```
 reader.classList.add("active")
 
 try{
 
-    /* ถ้ามี scanner เก่าให้ปิดก่อน */
+/* ถ้ามี scanner เก่าให้ปิดก่อน */
 
-    if(scanner){
-        await scanner.stop().catch(()=>{})
-    }
+if(scanner){
+await scanner.stop().catch(()=>{})
+}
 
-    scanner = new Html5Qrcode("reader")
+/* สร้าง scanner */
 
-    /* ดึงรายการกล้อง */
+scanner = new Html5Qrcode("reader")
 
-    const cameras = await Html5Qrcode.getCameras()
+/* ดึงรายการกล้อง */
 
-    if(!cameras.length){
-        alert("ไม่พบกล้อง")
-        return
-    }
+const cameras = await Html5Qrcode.getCameras()
 
-    /* พยายามเลือกกล้องหลัง */
+if(!cameras.length){
+alert("ไม่พบกล้อง")
+return
+}
 
-    const backCamera =
-    cameras.find(c => c.label.toLowerCase().includes("back")) 
-    || cameras[0]
+/* เลือกกล้องหลัง */
 
-    /* เริ่ม scan */
+const backCamera =
+cameras.find(c =>
+c.label.toLowerCase().includes("back")
+) || cameras[0]
 
-    await scanner.start(
+/* เริ่ม scan */
 
-        backCamera.id,
+await scanner.start(
 
-        {
-            fps:20,
+backCamera.id,
 
-            /* รองรับ barcode เกือบทั้งหมด */
+{
+fps:20,
 
-            formatsToSupport:[
+qrbox:{
+width:280,
+height:120
+},
 
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.EAN_8,
+aspectRatio:1.7
 
-                Html5QrcodeSupportedFormats.UPC_A,
-                Html5QrcodeSupportedFormats.UPC_E,
+},
 
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.CODE_39,
-                Html5QrcodeSupportedFormats.CODE_93,
+/* scan สำเร็จ */
 
-                Html5QrcodeSupportedFormats.ITF,
-                Html5QrcodeSupportedFormats.CODABAR
+(decodedText)=>{
 
-            ],
+const clean = cleanBarcode(decodedText)
 
-            /* กรอบ scan เหมาะกับ barcode */
+input.value = clean
 
-            qrbox:{
-                width:280,
-                height:120
-            },
+searchProduct(clean)
 
-            aspectRatio:1.7
+/* ปิดกล้อง */
 
-        },
+scanner.stop().catch(()=>{})
 
-        /* scan สำเร็จ */
+reader.classList.remove("active")
 
-        (decodedText)=>{
+},
 
-            const clean = cleanBarcode(decodedText)
+(err)=>{}
 
-            input.value = clean
+)
 
-            searchProduct(clean)
+}catch(err){
 
-            /* ปิดกล้องหลัง scan สำเร็จ */
+console.error(err)
 
-            scanner.stop()
-
-            reader.classList.remove("active")
-
-        },
-
-        /* error scan (ไม่ต้องทำอะไร) */
-
-        (err)=>{}
-
-    )
+alert("เปิดกล้องไม่ได้")
 
 }
-catch(err){
-
-    console.error(err)
-
-    alert("เปิดกล้องไม่สำเร็จ")
-
-}
-```
 
 })
 
-/* =======================================================
-Scan จากรูปภาพ
-======================================================= */
+/* =========================================
+Select From Gallery
+========================================= */
 
-uploadBtn.addEventListener("click", () => {
+uploadBtn.addEventListener("click", ()=>{
 
-```
 fileInput.click()
-```
 
 })
 
 fileInput.addEventListener("change", async (e)=>{
 
-```
 const file = e.target.files[0]
 
 if(!file) return
 
-const scanner = new Html5Qrcode("reader")
+const tempScanner = new Html5Qrcode("reader")
 
 try{
 
-    const result = await scanner.scanFile(file,true)
+const result = await tempScanner.scanFile(file,true)
 
-    const clean = cleanBarcode(result)
+const clean = cleanBarcode(result)
 
-    input.value = clean
+input.value = clean
 
-    searchProduct(clean)
+searchProduct(clean)
+
+}catch(err){
+
+alert("อ่าน barcode จากรูปไม่ได้")
 
 }
-catch(err){
-
-    alert("ไม่สามารถอ่าน barcode จากรูปได้")
-
-}
-```
 
 })
