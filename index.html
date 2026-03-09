@@ -33,11 +33,11 @@ placeholder="กรอก / scan barcode"
 
 <div class="btn-group">
 
-<button id="uploadBtn">
+<button id="uploadBtn" class="upload-btn">
 Select from Gallery
 </button>
 
-<button id="scanBtn">
+<button id="scanBtn" class="scan-btn">
 Scan Camera
 </button>
 
@@ -63,8 +63,27 @@ Check Incentive
 </div>
 
 <div class="result-row">
-<span>Store Leader</span>
+<span>Incentive พี่ปูน</span>
 <strong id="leaderCom">-</strong>
+</div>
+
+<div class="result-row">
+<span>Incentive ตาแม็ก</span>
+<strong id="tamagCom">-</strong>
+</div>
+
+<div id="incentiveExtra" style="display:none">
+
+<div class="extra">
+<strong>รายละเอียด:</strong>
+<span id="incentiveDetail"></span>
+</div>
+
+<div class="extra">
+<strong>ช่วงเวลา:</strong>
+<span id="incentiveDate"></span>
+</div>
+
 </div>
 
 </section>
